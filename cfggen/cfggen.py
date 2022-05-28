@@ -106,13 +106,16 @@ def form_cfg(labeled_blocks):
 
 
 def prog_to_cfg(prog):
+    cfgs = {}
     for func in prog['functions']:
         blocks = list(form_blocks(func))
         labeled_blocks = map_blocks(blocks)
         # pprint(block_map)
-        cfg = form_cfg(labeled_blocks)
+        cfgs[func['name']] = form_cfg(labeled_blocks)
+    return cfgs
 
 
 if __name__ == '__main__':
     prog = json.load(sys.stdin)
-    prog_to_cfg(prog)
+    cfgs = prog_to_cfg(prog)
+    pprint(cfgs)
