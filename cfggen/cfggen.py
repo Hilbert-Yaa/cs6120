@@ -1,6 +1,6 @@
 import json
 import sys
-from pprint import pprint
+from pprint import pprint, pformat
 from collections import OrderedDict
 
 TERMINATORS = 'jmp', 'br', 'ret'
@@ -21,7 +21,7 @@ class CFGBasicBlock(object):
         return self.instrs[key]
 
     def __repr__(self):
-        return f"block <{self.label}> of size {len(self.instrs)}"
+        return pformat(self)
 
 
 class CFG(object):
@@ -54,7 +54,7 @@ class CFG(object):
                     next_block.preds.append(cur_block.label)
 
     def __repr__(self):
-        pass
+        return "ah it's too complicated..."
 
 
 def form_blocks(func):
