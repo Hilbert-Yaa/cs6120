@@ -27,6 +27,31 @@ class CFGBasicBlock(object):
 class CFG(object):
     def __init__(self, blocks):
         self.blocks = blocks
+        self.label_map = {}
+        for idx, block in enumerate(blocks):
+            self.label_map[block.label] = idx
+        self.build_graph()
+
+    def build_graph(self):
+        for cur_idx, cur_block in enumerate(self.blocks):
+            last_instr = cur_block[-1]
+            if 'labels' in last_instr:
+                # a branching instruction
+                cur_block.succs = last_instr['labels']
+                for succ in cur_block.succs:
+                    succ_idx = self.label_map[succ]
+                    self.blocks[succ_idx].preds.append(cur_block.label)
+            elif last_instr['op'] == 'ret':
+                # end of the function body
+                pass
+            else:
+                # a fall-through block
+                if cur_idx == len(self.blocks) - 1:
+                    pass
+                else:
+                    next_block = self.blocks[cur_idx + 1]
+                    cur_block.succs.append(next_block.label)
+                    next_block.preds.append(cur_block.label)
 
     def __repr__(self):
         pass
@@ -75,15 +100,17 @@ def map_blocks(blocks):
     return labeled_blocks
 
 
-def form_cfg(block_map):
-    pass
+def form_cfg(labeled_blocks):
+    cfg = CFG(labeled_blocks)
+    return cfg
 
 
 def prog_to_cfg(prog):
     for func in prog['functions']:
         blocks = list(form_blocks(func))
         labeled_blocks = map_blocks(blocks)
-        pprint(block_map)
+        # pprint(block_map)
+        cfg = form_cfg(labeled_blocks)
 
 
 if __name__ == '__main__':
