@@ -14,6 +14,12 @@ class CFGBasicBlock(object):
         self.preds = []
         self.succs = []
 
+    def __len__(self):
+        return len(self.instrs)
+
+    def __getitem__(self, key):
+        return self.instrs[key]
+
     def __repr__(self):
         return f"block <{self.label}> of size {len(self.instrs)}"
 
@@ -76,7 +82,7 @@ def form_cfg(block_map):
 def prog_to_cfg(prog):
     for func in prog['functions']:
         blocks = list(form_blocks(func))
-        block_map = map_blocks(blocks)
+        labeled_blocks = map_blocks(blocks)
         pprint(block_map)
 
 
