@@ -1,7 +1,9 @@
 import json
 import sys
+from pprint import pprint
 
 TERMINATORS = 'jmp', 'br', 'ret'
+NAME_PREFIX = 'anon'
 
 
 class CFGBasicBlock(object):
@@ -23,23 +25,55 @@ class CFG(object):
         pass
 
 
-def form_blocks(prog):
-    for instr in prog:
-        pass
+def form_blocks(func):
+    cur_block = []
+    for instr in func['instrs']:
+        if 'op' in instr:
+            # an actual instruction
+            cur_block.append(instr)
+            if instr['op'] in TERMINATORS and cur_block:
+                yield cur_block
+                cur_block = []
+        else:
+            # a label statement
+            if cur_block:
+                yield cur_block
+            cur_block = [instr, ]
+    if cur_block:
+        yield cur_block
 
 
-def map_blocks(prog, blocks):
-    pass
+def name_gen():
+    cnt = 0
+    while True:
+        yield f"{NAME_PREFIX}{cnt}"
+        cnt += 1
+
+
+def map_blocks(blocks):
+    block_map = {}
+    anon_name = name_gen()
+
+    for block in blocks:
+        if 'label' in block[0]:
+            # a labeled block
+            name = block[0]['label']
+            block_map[name] = block[1:]
+        else:
+            # an anonymous block
+            name = next(anon_name)
+            block_map[name] = block
+    return block_map
 
 
 def prog_to_cfg(prog):
-    pass
-
-
-def cfg():
-    prog = json.load(sys.stdin)
-    print(prog)
+    for func in prog['functions']:
+        blocks = list(form_blocks(func))
+        pprint(blocks)
+        block_map = map_blocks(blocks)
+        pprint(block_map)
 
 
 if __name__ == '__main__':
-    cfg()
+    prog = json.load(sys.stdin)
+    prog_to_cfg(prog)
