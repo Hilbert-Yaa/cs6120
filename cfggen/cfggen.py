@@ -1,20 +1,21 @@
 import json
 import sys
 from pprint import pprint
+from collections import OrderedDict
 
 TERMINATORS = 'jmp', 'br', 'ret'
 NAME_PREFIX = 'anon'
 
 
 class CFGBasicBlock(object):
-    def __init__(self, instrs):
+    def __init__(self, label, instrs):
+        self.label = label
         self.instrs = instrs
         self.preds = []
         self.succs = []
 
     def __repr__(self):
-        for instr in self.instrs:
-            print(instr)
+        return f"block <{self.label}> of size {len(self.instrs)}"
 
 
 class CFG(object):
@@ -43,7 +44,7 @@ def form_blocks(func):
         yield cur_block
 
 
-def name_gen():
+def label_gen():
     cnt = 0
     while True:
         yield f"{NAME_PREFIX}{cnt}"
@@ -51,25 +52,30 @@ def name_gen():
 
 
 def map_blocks(blocks):
-    block_map = {}
-    anon_name = name_gen()
+    labeled_blocks = []
+    anon_label = label_gen()
 
     for block in blocks:
         if 'label' in block[0]:
             # a labeled block
-            name = block[0]['label']
-            block_map[name] = block[1:]
+            label = block[0]['label']
+            cur_block = CFGBasicBlock(label, block[1:])
+            labeled_blocks.append(cur_block)
         else:
             # an anonymous block
-            name = next(anon_name)
-            block_map[name] = block
-    return block_map
+            label = next(anon_label)
+            cur_block = CFGBasicBlock(label, block)
+            labeled_blocks.append(cur_block)
+    return labeled_blocks
+
+
+def form_cfg(block_map):
+    pass
 
 
 def prog_to_cfg(prog):
     for func in prog['functions']:
         blocks = list(form_blocks(func))
-        pprint(blocks)
         block_map = map_blocks(blocks)
         pprint(block_map)
 
