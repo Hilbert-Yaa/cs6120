@@ -1,1 +1,8 @@
-2
+digraph main {
+	anon0;
+	here;
+	there;
+	anon0 -> there;
+	anon0 -> here;
+	here -> there;
+}
